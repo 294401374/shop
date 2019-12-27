@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
@@ -16,5 +17,13 @@ class Product extends Model
     public function skus()
     {
         return $this->hasMany(ProductSku::class);
+    }
+
+    public function getImgUrlAttribute()
+    {
+        if (Str::startsWith($this->attributes['img'], ['http://', 'https://'])) {
+            return $this->attributes['img'];
+        }
+        return \Storage::disk('public')->url($this->attributes['img']);
     }
 }
