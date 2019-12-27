@@ -17,7 +17,7 @@ class CreateProductSkusTable extends Migration
             $table->bigIncrements('id');
             $table->string('title')->comment('SKU名称');
             $table->text('description')->comment('SKU描述');
-            $table->json('attributes')->comment('SKU属性');
+            $table->json('attributes')->nullable()->comment('SKU属性');
             $table->unsignedInteger('stock')->comment('库存');
             $table->unsignedBigInteger('product_id')->comment('商品ID');
             $table->decimal('price', 8, 2)->comment('商品价格');

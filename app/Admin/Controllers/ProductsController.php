@@ -40,7 +40,7 @@ class ProductsController extends Controller
     {
         return $content
             ->header('Detail')
-            ->description('description')
+            // ->description('description')
             ->body($this->detail($id));
     }
 
@@ -54,9 +54,13 @@ class ProductsController extends Controller
     public function edit($id, Content $content)
     {
         return $content
-            ->header('Edit')
-            ->description('description')
+            ->header('编辑商品')
             ->body($this->form()->edit($id));
+    }
+
+    public function update($id)
+    {
+        return $this->form()->update($id);
     }
 
     /**
@@ -68,10 +72,11 @@ class ProductsController extends Controller
     public function create(Content $content)
     {
         return $content
-            ->header('Create')
-            ->description('description')
+            ->header('创建商品')
             ->body($this->form());
     }
+
+
 
     /**
      * Make a grid builder.
@@ -142,14 +147,25 @@ class ProductsController extends Controller
     {
         $form = new Form(new Product);
 
-        $form->text('title', 'Title');
-        $form->textarea('description', 'Description');
-        $form->decimal('price', 'Price');
-        $form->image('img', 'Img');
-        $form->switch('on_sale', 'On sale')->default(1);
-        $form->number('sold_count', 'Sold count');
-        $form->number('review_count', 'Review count');
-        $form->decimal('rating', 'Rating')->default(5.00);
+        $form->text('title', '名称')->rules('required');
+        // $form->editor('description', '描述')->rules('required');
+        // 这个价格是用的sku表的最低价格
+        // $form->decimal('price', '价格');
+        $form->image('img', '封面图')->rules('required|image');
+        // 选择是否正在销售
+        $form->radio('on_sale', '上架')->options(['1'=>'是','0'=>'否'])->default('0');
+
+        $form->hasMany('skus', '商品SKU', function(Form\NestedForm $form){
+            $form->text('title', 'SKU 名称')->rules('required');
+            $form->text('description', 'SKU 描述')->rules('required');
+            $form->text('stock', '库存')->rules('required|integer|min:0');
+            $form->text('price', '单价')->rules('required|numeric|min:0.01');
+        });
+        // 定义获取最低值
+        $form->saving(function(Form $form){
+            // $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price') ?: 0;
+            $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price')?:0;
+        });
 
         return $form;
     }
